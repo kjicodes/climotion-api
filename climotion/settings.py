@@ -9,8 +9,11 @@ https://docs.djangoproject.com/en/6.0/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.0/ref/settings/
 """
-
+import os
 from pathlib import Path
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -20,7 +23,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-4l)@p-jud!#*&^+m_@z1()m@3&hhufj#24$yyc1501h2@jv5dj'
+SECRET_KEY = os.getenv('SECRET_KEY')
+OPENWEATHER_API_KEY = os.getenv('OPENWEATHER_API_KEY')
+EXERCISES_API_KEY = os.getenv('EXERCISES_API_KEY')
+OPENWEATHER_BASE_URL = os.getenv('OPENWEATHER_BASE_URL')
+GEOCODING_BASE_URL = os.getenv('GEOCODING_BASE_URL')
+EXERCISES_BASE_URL = os.getenv('EXERCISES_BASE_URL')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -37,6 +45,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'api'
 ]
 
 MIDDLEWARE = [
