@@ -1,0 +1,50 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Climotion</title>
+    <link rel="stylesheet" href="{% static 'api/style.css' %}">
+</head>
+<body>
+
+    <header>
+        <h1>Climotion</h1>
+        <p>Check the weather, plan your workout.</p>
+    </header>
+
+    <form method="GET">
+        <label for="city-input" class="sr-only">City</label>
+        <input
+            id="city-input"
+            type="text"
+            name="city"
+            placeholder="Enter a city..."
+            value="{{ request.GET.city }}"
+            autofocus
+        >
+        <button type="submit">Search</button>
+    </form>
+
+    {% if forecast %}
+    <div class="weather-card">
+        <div class="city-name">{{ request.GET.city|title }}</div>
+        <div class="condition">{{ forecast.weather }}</div>
+
+        <div class="temp-main">{{ forecast.temperature }}°C</div>
+        <div class="temp-feels">Feels like {{ forecast.feels_like }}°C</div>
+
+        <div class="temp-range">
+            <span>H: <strong>{{ forecast.high }}°C</strong></span>
+            <span>L: <strong>{{ forecast.low }}°C</strong></span>
+        </div>
+
+        <hr class="divider">
+
+        <div class="suggestion">{{ forecast.description }}</div>
+    </div>
+    {% endif %}
+
+</body>
+</html>
