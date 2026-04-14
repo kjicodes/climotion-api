@@ -19,6 +19,39 @@ BAD_WEATHER_CONDITIONS = {
                     "Head inside for your workout today."
 }
 
+def get_weather(city):
+    geo_api_params = {
+        'q': city,
+        'appid': settings.OPENWEATHER_API_KEY,
+    }
+    geo_api_response = requests.get(settings.GEOCODING_BASE_URL, params=geo_api_params)
+    geo_api_response.raise_for_status()
+    geo_api_data = geo_api_response.json()
+    latitude = geo_api_data[0]['lat']
+    longitude = geo_api_data[0]['lon']
+
+    weather_api_params = {
+        'lat': latitude,
+        'lon': longitude,
+        'appid': settings.OPENWEATHER_API_KEY
+    }
+    weather_api_response = requests.get(settings.OPENWEATHER_BASE_URL, params=weather_api_params)
+    weather_api_response.raise_for_status()
+    weather_data = weather_api_response.json()
+
+    celsius_conversion = 273.15
+    forecast = {
+        'weather': weather_data["weather"][0]['main'],
+        'description': get_workout_suggestion(weather_data),
+        'temperature': int(weather_data["main"]["temp"] - celsius_conversion),
+        'feels_like': int(weather_data["main"]["feels_like"] - celsius_conversion),
+        'low': int(weather_data["main"]["temp_min"] - celsius_conversion),
+        'high': int(weather_data["main"]["temp_max"] - celsius_conversion)
+    }
+
+    return forecast
+
+
 
 def get_workout_suggestion(weather):
     description = weather["weather"][0]["main"]
@@ -37,37 +70,9 @@ def get_workout_suggestion(weather):
 class HomeView(View):
     def get(self, request):
         city = request.GET.get('city')
-
         if not city:
             return render(request, 'home.html')
 
-        geo_params = {
-            'q': city,
-            'appid': settings.OPENWEATHER_API_KEY,
-        }
-        geo_response = requests.get(settings.GEOCODING_BASE_URL, params=geo_params)
-        geo_response.raise_for_status()
-        geo_data = geo_response.json()
-        latitude = geo_data[0]['lat']
-        longitude = geo_data[0]['lon']
-
-        weather_params = {
-            'lat': latitude,
-            'lon': longitude,
-            'appid': settings.OPENWEATHER_API_KEY
-        }
-        weather_response = requests.get(settings.OPENWEATHER_BASE_URL, params=weather_params)
-        weather_response.raise_for_status()
-        weather_data = weather_response.json()
-
-        celsius_conversion = 273.15
-        forecast = {
-            'weather': weather_data["weather"][0]['main'],
-            'description': get_workout_suggestion(weather_data),
-            'temperature': int(weather_data["main"]["temp"] - celsius_conversion),
-            'feels_like': int(weather_data["main"]["feels_like"] - celsius_conversion),
-            'low': int(weather_data["main"]["temp_min"] - celsius_conversion),
-            'high': int(weather_data["main"]["temp_max"] - celsius_conversion)
-        }
+        forecast = get_weather(city)
 
         return render(request, 'home.html', {'forecast': forecast})
