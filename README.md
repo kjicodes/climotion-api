@@ -1,6 +1,6 @@
 # Climotion
 
-A weather-aware workout planner. Enter your city to get current weather conditions and a recommendation on whether to work out indoors or outdoors.
+A weather-aware workout planner. Enter your city to get current weather conditions and a recommendation on whether to work out indoors or outdoors. Select your workout type, target muscle groups, and preferred difficulty level to receive personalised exercise recommendations tailored to both your preferences and the weather.
 
 > **In progress** 
 
