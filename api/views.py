@@ -1,9 +1,11 @@
 import requests
+import random
+import json
 from django.conf import settings
 from django.shortcuts import render
 from django.views import View
 
-MIN_TEMP_CELSIUS = 10
+MIN_TEMP_CELSIUS = 5
 BAD_WEATHER_CONDITIONS = {
     "drizzle": "It's not quite raining, but it's not not raining either — "
                "that sneaky mist that somehow soaks you without warning. "
@@ -18,6 +20,13 @@ BAD_WEATHER_CONDITIONS = {
                     "you should absolutely not be the tallest thing in an open field. "
                     "Head inside for your workout today."
 }
+
+MUSCLE_GROUPS = {
+    "full": ["abdominals", "biceps", "chest", "lats", "lower_back", "middle_back", "traps", "triceps", "abductors", "adductors", "calves", "glutes", "hamstrings", "quadriceps"],
+    "upper": ["abdominals", "biceps", "chest", "lats", "lower_back", "middle_back", "traps", "triceps"],
+    "lower": ["abductors", "adductors", "calves", "glutes", "hamstrings", "quadriceps"]
+}
+
 
 def get_weather(city):
     geo_api_params = {
@@ -51,6 +60,60 @@ def get_weather(city):
 
     return forecast
 
+def get_exercises(exercise_type, difficulty, muscle_groups: list=None):
+    headers = {
+        "X-Api-Key": settings.EXERCISES_API_KEY
+    }
+
+    all_exercises = []
+    if muscle_groups:
+        #pick 4 random groups from the list and get 1 random exercise per group
+        random_muscle_groups = random.sample(muscle_groups, min(4, len(muscle_groups)))
+        print(f"Randomly chosen muscle groups: {random_muscle_groups}")
+
+        shortfall = 0
+        for group in random_muscle_groups:
+            exercises_api_params = {
+                "type": exercise_type,
+                "muscle": group,
+                "difficulty": difficulty
+            }
+            exercises_api_response = requests.get(settings.EXERCISES_BASE_URL, params=exercises_api_params, headers=headers)
+            exercises_api_response.raise_for_status()
+            exercises_api_data = exercises_api_response.json()
+
+            target = 1 + shortfall
+            k = min(target, len(exercises_api_data))
+            exercise = random.sample(exercises_api_data, k)
+            print("Printer chosen exercise per muscle group (1 value)")
+            print(json.dumps(exercise, indent=2))
+
+            for item in exercise:
+                if "_" in item["muscle"]:
+                    item["muscle"] = item["muscle"].replace("_", " ")
+                all_exercises.append(item)
+
+            shortfall = target - k
+
+    else:
+        #Return up to 3 cardio exercises
+        exercises_api_params = {
+            "type": exercise_type,
+            "difficulty": difficulty
+        }
+        exercises_api_response = requests.get(settings.EXERCISES_BASE_URL, params=exercises_api_params,
+                                              headers=headers)
+        exercises_api_response.raise_for_status()
+        exercises_api_data = exercises_api_response.json()
+
+        exercises = random.sample(exercises_api_data, min(3, len(exercises_api_data)))
+
+        for item in exercises:
+            all_exercises.append(item)
+
+    print(json.dumps(all_exercises, indent=2))
+    return all_exercises
+
 
 
 def get_workout_suggestion(weather):
@@ -76,3 +139,31 @@ class HomeView(View):
         forecast = get_weather(city)
 
         return render(request, 'home.html', {'forecast': forecast})
+
+
+class ExerciseView(View):
+
+    def get(self, request):
+        workout = request.session.pop("workout", None)
+        return render(request, "workout.html", {"workout": workout})
+
+
+    def post(self, request):
+        exercise_type = request.POST.get("exercise-type")
+        difficulty = request.POST.get("difficulty")
+        muscle_group = request.POST.get("muscle-group")
+
+        workout = ""
+        if exercise_type == "cardio":
+            workout = get_exercises(exercise_type, difficulty, muscle_groups=None)
+        else:
+            if muscle_group == "upper":
+                workout = get_exercises(exercise_type, difficulty, MUSCLE_GROUPS["upper"])
+            elif muscle_group == "lower":
+                workout = get_exercises(exercise_type, difficulty, MUSCLE_GROUPS["lower"])
+            else:
+                workout = get_exercises(exercise_type, difficulty, MUSCLE_GROUPS["full"])
+
+        request.session["workout"] = workout
+        return render(request, "workout.html", {"workout": workout})
+
