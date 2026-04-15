@@ -28,21 +28,29 @@
     </form>
 
     {% if forecast %}
-    <div class="weather-card">
-        <div class="city-name">{{ request.GET.city|title }}</div>
-        <div class="condition">{{ forecast.weather }}</div>
+    <div class="results-layout">
+        <div class="weather-card">
+            <div class="city-name">{{ request.GET.city|title }}</div>
+            <div class="condition">{{ forecast.weather }}</div>
 
-        <div class="temp-main">{{ forecast.temperature }}°C</div>
-        <div class="temp-feels">Feels like {{ forecast.feels_like }}°C</div>
+            <div class="temp-main">{{ forecast.temperature }}°C</div>
+            <div class="temp-feels">Feels like {{ forecast.feels_like }}°C</div>
 
-        <div class="temp-range">
-            <span>H: <strong>{{ forecast.high }}°C</strong></span>
-            <span>L: <strong>{{ forecast.low }}°C</strong></span>
+            <div class="temp-range">
+                <span>H: <strong>{{ forecast.high }}°C</strong></span>
+                <span>L: <strong>{{ forecast.low }}°C</strong></span>
+            </div>
+
+            <hr class="divider">
+
+            <div class="suggestion">{{ forecast.description }}</div>
         </div>
 
-        <hr class="divider">
-
-        <div class="suggestion">{{ forecast.description }}</div>
+        <div class="workout-prompt">
+            <p>Ready to move?</p>
+            <h2>Plan your workout based on today's conditions.</h2>
+            <a href="{% url 'workout' %}" class="workout-link">Choose Your Workout</a>
+        </div>
     </div>
     {% endif %}
 

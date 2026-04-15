@@ -82,6 +82,8 @@ form button:hover {
     background: #2c5282;
 }
 
+/* ── Shared card style ── */
+
 .weather-card {
     background: #fff;
     border-radius: 16px;
@@ -138,4 +140,214 @@ form button:hover {
     font-size: 0.95rem;
     color: #4a5568;
     line-height: 1.6;
+}
+
+/* ── Home: results layout ── */
+
+.results-layout {
+    display: flex;
+    flex-direction: row;
+    gap: 40px;
+    align-items: flex-start;
+    width: 960px;
+}
+
+.results-layout .weather-card {
+    flex: 1;
+    width: 0;
+    max-width: none;
+}
+
+.workout-prompt {
+    flex: 1;
+    width: 0;
+    background: #fff;
+    border-radius: 16px;
+    padding: 32px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.07);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 12px;
+}
+
+.workout-prompt p {
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #a0aec0;
+}
+
+.workout-prompt h2 {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #1a202c;
+    line-height: 1.4;
+}
+
+.workout-link {
+    display: inline-block;
+    margin-top: 8px;
+    padding: 12px 20px;
+    background: #2b6cb0;
+    color: #fff;
+    text-decoration: none;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    transition: background 0.2s;
+    align-self: flex-start;
+}
+
+.workout-link:hover {
+    background: #2c5282;
+}
+
+/* ── Workout page layout ── */
+
+.workout-layout {
+    display: flex;
+    gap: 40px;
+    align-items: flex-start;
+    width: 100%;
+    max-width: 1100px;
+}
+
+.workout-form-panel {
+    flex-shrink: 0;
+    width: 280px;
+}
+
+.workout-form-panel form {
+    flex-direction: column;
+    max-width: 100%;
+    margin-bottom: 0;
+    gap: 20px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.form-group label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #4a5568;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.form-group select {
+    padding: 10px 14px;
+    border: 1px solid #cbd5e0;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    background: #fff;
+    color: #1a202c;
+    outline: none;
+    cursor: pointer;
+    transition: border-color 0.2s;
+}
+
+.form-group select:focus {
+    border-color: #4299e1;
+}
+
+.workout-form-panel button[type="submit"] {
+    width: 100%;
+    padding: 12px;
+    background: #2b6cb0;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.workout-form-panel button[type="submit"]:hover {
+    background: #2c5282;
+}
+
+.exercise-results {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.exercise-card {
+    background: #fff;
+    border-radius: 16px;
+    padding: 28px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.07);
+}
+
+.exercise-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+}
+
+.exercise-name {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #1a202c;
+}
+
+.exercise-meta {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+}
+
+.exercise-badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.78rem;
+    font-weight: 600;
+}
+
+.exercise-badge.difficulty {
+    background: #ebf8ff;
+    color: #2b6cb0;
+}
+
+.exercise-badge.equipment {
+    background: #f0fff4;
+    color: #276749;
+}
+
+.exercise-badge.muscle {
+    background: #faf5ff;
+    color: #6b46c1;
+}
+
+.exercise-section {
+    margin-bottom: 14px;
+}
+
+.exercise-section:last-child {
+    margin-bottom: 0;
+}
+
+.section-label {
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #a0aec0;
+    margin-bottom: 6px;
+}
+
+.exercise-section p:last-child {
+    font-size: 0.92rem;
+    color: #4a5568;
+    line-height: 1.65;
 }
