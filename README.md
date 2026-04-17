@@ -1,23 +1,21 @@
 # Climotion
 
-A weather-aware workout planner. Enter your city to get current weather conditions and a recommendation on whether to work out indoors or outdoors. Select your workout type, target muscle groups, and preferred difficulty level to receive personalised exercise recommendations tailored to both your preferences and the weather.
+A weather-aware workout planner. Enter your city to get current weather conditions and a recommendation on whether to work out indoors or outdoors. Select your workout type, target muscle groups, and preferred difficulty level to receive personalized exercise recommendations tailored to both your preferences and the weather.
 
 ## Tech Stack
 
-- Python
-- Django
-- SQLite
-- OpenWeatherMap API
-- API Ninjas Exercises API
+- **Backend:** Python, Django
+- **Frontend:** HTML, CSS
+- **Database:** SQLite (development)
+- **APIs:** OpenWeatherMap API, API Ninjas Exercises API
 
 ## Features
 
-- City-based weather lookup using OpenWeatherMap geocoding
-- Displays temperature, feels like, and daily high/low
-- Suggests indoor or outdoor workout based on conditions and temperature
-- Workout type selection (e.g. strength, cardio, flexibility)
-- Muscle group targeting and difficulty level selection
-- Exercise recommendations based on user preferences via API Ninjas
+- City-based weather lookup with current conditions, temperature, and daily high/low
+- Indoor or outdoor workout recommendation based on live weather and temperature
+- Workout type — cardio, strength training, or stretching — and difficulty level selection
+- Target muscle group selection for strength training
+- Personalized exercise recommendations based on user preferences
 
 ## Running Locally
 
