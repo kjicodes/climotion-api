@@ -51,5 +51,3 @@ A weather-aware workout planner. Enter your city to get current weather conditio
 - [x] Exercise recommendations by workout type and difficulty level
 - [x] Muscle group selector for strength training
 - [ ] UI improvements and bug fixes
-- [ ] Migrate backend to Django REST Framework
-- [ ] Build React frontend
