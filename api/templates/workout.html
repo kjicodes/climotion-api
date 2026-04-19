@@ -17,7 +17,7 @@
     <div class="workout-layout">
 
         <div class="workout-form-panel">
-            <form method="POST">
+            <form method="GET">
                 {% csrf_token %}
                 <div class="form-group">
                     <label for="exercise-type">Exercise Type</label>
@@ -30,7 +30,7 @@
 
                 <div class="form-group" id="target-group-container">
                     <label for="muscle-group">Target Group</label>
-                    <select id="muscle-group" name="muscle_group">
+                    <select id="muscle-group" name="muscle-group">
                         <option value="full">Head to Toe</option>
                         <option value="upper">Top Half</option>
                         <option value="lower">Bottom Half</option>
