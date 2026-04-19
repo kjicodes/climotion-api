@@ -8,3 +8,16 @@ class SearchedCity(models.Model):
 
     def __str__(self):
         return self.city_name
+
+
+class SavedWorkout(models.Model):
+    exercise_type = models.CharField(max_length=100, blank=False)
+    difficulty = models.CharField(max_length=100, blank=False)
+    workout = models.JSONField(default=list, blank=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    class Meta:
+        verbose_name = "Saved Workout"
+        verbose_name_plural = "Saved Workouts"
+
+    def __str__(self):
+        return self.workout

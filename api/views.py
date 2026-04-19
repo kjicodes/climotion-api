@@ -2,11 +2,12 @@ import requests
 import random
 import json
 from django.conf import settings
-from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_200_OK
+from django.shortcuts import render
+from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_200_OK, HTTP_201_CREATED
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from api.models import SearchedCity
-from api.serializers import SearchedCitySerializer
+from api.models import SearchedCity, SavedWorkout
+from api.serializers import SearchedCitySerializer, SavedWorkoutSerializer
 
 MIN_TEMP_CELSIUS = 5
 BAD_WEATHER_CONDITIONS = {
@@ -202,6 +203,28 @@ class SearchedCityView(APIView):
 
         response = { "data": saved_cities.data }
         return Response(response, status=HTTP_200_OK)
+
+
+class SavedWorkoutView(APIView):
+    """Returns a list of previously saved workouts and saves new ones."""
+
+    def get(self, request, *args, **kwargs):
+        saved_workouts = SavedWorkoutSerializer(SavedWorkout.objects.all(), many=True)
+        if not saved_workouts.data:
+            response = { "message": "No saved workouts found." }
+            return Response(response, status=HTTP_200_OK)
+
+        response = {"data": saved_workouts.data}
+        return Response(response, status=HTTP_200_OK)
+
+    def post(self, request, *args, **kwargs):
+        serializer = SavedWorkoutSerializer(data=request.data)
+
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
+        serializer.save()
+        return Response(serializer.data, status=HTTP_201_CREATED)
+
 
 
 
