@@ -5,7 +5,8 @@ from django.conf import settings
 from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_200_OK
 from rest_framework.views import APIView
 from rest_framework.response import Response
-
+from api.models import SearchedCity
+from api.serializers import SearchedCitySerializer
 
 MIN_TEMP_CELSIUS = 5
 BAD_WEATHER_CONDITIONS = {
@@ -150,9 +151,16 @@ class WeatherView(APIView):
             response = { "error": "City must only contain letters, spaces, hyphens, or apostrophes." }
             return Response(response, status=HTTP_400_BAD_REQUEST)
 
+        # save searched city to db if it does not exist
+        if not SearchedCity.objects.filter(city_name=city).exists():
+            SearchedCity.objects.create(city_name=city)
+
+
         forecast = get_weather(city)
         response = { "data": forecast }
         return Response(response, status=HTTP_200_OK)
+
+
 
 
 class WorkoutView(APIView):
@@ -179,6 +187,19 @@ class WorkoutView(APIView):
             workout = get_exercises(exercise_type, difficulty, MUSCLE_GROUPS[muscle_group])
             response = { "data": workout }
             return Response(response, status=HTTP_200_OK)
+
+
+class SearchedCityView(APIView):
+    """Returns a list of previously searched cities to populate city input suggestions."""
+
+    def get(self, request, *args, **kwargs):
+        # fetch saved cities to show as drop-down suggestions list to the user
+        saved_cities = SearchedCitySerializer(SearchedCity.objects.all(), many=True)
+
+        response = { "data": saved_cities.data }
+        return Response(response, status=HTTP_200_OK)
+
+
 
 
 
