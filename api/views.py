@@ -2,8 +2,10 @@ import requests
 import random
 import json
 from django.conf import settings
-from django.shortcuts import render
-from django.views import View
+from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_200_OK
+from rest_framework.views import APIView
+from rest_framework.response import Response
+
 
 MIN_TEMP_CELSIUS = 5
 BAD_WEATHER_CONDITIONS = {
@@ -20,7 +22,6 @@ BAD_WEATHER_CONDITIONS = {
                     "you should absolutely not be the tallest thing in an open field. "
                     "Head inside for your workout today."
 }
-
 MUSCLE_GROUPS = {
     "full": ["abdominals", "biceps", "chest", "lats", "lower_back", "middle_back", "traps", "triceps", "abductors", "adductors", "calves", "glutes", "hamstrings", "quadriceps"],
     "upper": ["abdominals", "biceps", "chest", "lats", "lower_back", "middle_back", "traps", "triceps"],
@@ -28,11 +29,30 @@ MUSCLE_GROUPS = {
 }
 
 
+def get_workout_suggestion(weather):
+    """Evaluate weather conditions and temperature to return an indoor or outdoor workout recommendation."""
+
+    description = weather["weather"][0]["main"]
+    temp = weather["main"]["feels_like"]
+    for condition, message in BAD_WEATHER_CONDITIONS.items():
+        if condition in description:
+            return message
+
+    if temp < MIN_TEMP_CELSIUS:
+        return ("It feels cold out there — not ideal for breaking a sweat outside. "
+                "An indoor workout is the way to go today.")
+
+    return "The weather looks good — perfect conditions for an outdoor workout!"
+
+
 def get_weather(city):
+    """Resolves a city name to coordinates, then fetches and formats current weather conditions via the OpenWeather API."""
+
     geo_api_params = {
         'q': city,
         'appid': settings.OPENWEATHER_API_KEY,
     }
+
     geo_api_response = requests.get(settings.GEOCODING_BASE_URL, params=geo_api_params)
     geo_api_response.raise_for_status()
     geo_api_data = geo_api_response.json()
@@ -61,13 +81,14 @@ def get_weather(city):
     return forecast
 
 def get_exercises(exercise_type, difficulty, muscle_groups: list=None):
+    """Fetches a randomized list of exercises from the API Ninjas Exercises API based on type, difficulty, and optional muscle groups."""
+
     headers = {
         "X-Api-Key": settings.EXERCISES_API_KEY
     }
 
     all_exercises = []
     if muscle_groups:
-        #pick 4 random groups from the list and get 1 random exercise per group
         random_muscle_groups = random.sample(muscle_groups, min(4, len(muscle_groups)))
         print(f"Randomly chosen muscle groups: {random_muscle_groups}")
 
@@ -96,7 +117,6 @@ def get_exercises(exercise_type, difficulty, muscle_groups: list=None):
             shortfall = target - k
 
     else:
-        #Return up to 3 cardio exercises
         exercises_api_params = {
             "type": exercise_type,
             "difficulty": difficulty
@@ -106,64 +126,60 @@ def get_exercises(exercise_type, difficulty, muscle_groups: list=None):
         exercises_api_response.raise_for_status()
         exercises_api_data = exercises_api_response.json()
 
-        exercises = random.sample(exercises_api_data, min(3, len(exercises_api_data)))
+        exercises = random.sample(exercises_api_data, min(4, len(exercises_api_data)))
 
         for item in exercises:
             all_exercises.append(item)
 
-    print(json.dumps(all_exercises, indent=2))
     return all_exercises
 
 
 
-def get_workout_suggestion(weather):
-    description = weather["weather"][0]["main"]
-    temp = weather["main"]["feels_like"]
-    for condition, message in BAD_WEATHER_CONDITIONS.items():
-        if condition in description:
-            return message
+class WeatherView(APIView):
+    """Returns current weather condition and either an indoor or outdoor workout recommendation for a given city."""
 
-    if temp < MIN_TEMP_CELSIUS:
-        return ("It feels cold out there — not ideal for breaking a sweat outside. "
-                "An indoor workout is the way to go today.")
-
-    return "The weather looks good — perfect conditions for an outdoor workout!"
-
-
-class HomeView(View):
-    def get(self, request):
-        city = request.GET.get('city')
+    def get(self, request, *args, **kwargs):
+        city = request.query_params.get('city')
         if not city:
-            return render(request, 'home.html')
+            response = { "error": "City is required." }
+            return Response(response, status=HTTP_400_BAD_REQUEST)
+
+        city_is_valid = city.replace(" ", "").replace("-", "").replace("'", "").isalpha()
+        city_is_numeric = city.isdigit()
+        if city_is_numeric or not city_is_valid:
+            response = { "error": "City must only contain letters, spaces, hyphens, or apostrophes." }
+            return Response(response, status=HTTP_400_BAD_REQUEST)
 
         forecast = get_weather(city)
-
-        return render(request, 'home.html', {'forecast': forecast})
-
-
-class ExerciseView(View):
-
-    def get(self, request):
-        workout = request.session.pop("workout", None)
-        return render(request, "workout.html", {"workout": workout})
+        response = { "data": forecast }
+        return Response(response, status=HTTP_200_OK)
 
 
-    def post(self, request):
-        exercise_type = request.POST.get("exercise-type")
-        difficulty = request.POST.get("difficulty")
-        muscle_group = request.POST.get("muscle-group")
+class WorkoutView(APIView):
+    """Returns a list of exercises based on the user's selected workout type, difficulty, and muscle groups."""
 
-        workout = ""
+    def get(self, request, *args, **kwargs):
+        exercise_type = request.query_params.get("exercise-type")
+        difficulty = request.query_params.get("difficulty")
+        muscle_group = request.query_params.get("muscle-group")
+
+
         if exercise_type == "cardio":
-            workout = get_exercises(exercise_type, difficulty, muscle_groups=None)
-        else:
-            if muscle_group == "upper":
-                workout = get_exercises(exercise_type, difficulty, MUSCLE_GROUPS["upper"])
-            elif muscle_group == "lower":
-                workout = get_exercises(exercise_type, difficulty, MUSCLE_GROUPS["lower"])
-            else:
-                workout = get_exercises(exercise_type, difficulty, MUSCLE_GROUPS["full"])
+            if not difficulty:
+                response = { "error": "Difficulty is required for cardio exercises." }
+                return Response(response, status=HTTP_400_BAD_REQUEST)
 
-        request.session["workout"] = workout
-        return render(request, "workout.html", {"workout": workout})
+            workout = get_exercises(exercise_type, difficulty, muscle_groups=None)
+            response = { "data": workout }
+            return Response(response, status=HTTP_200_OK)
+        else:
+            if not exercise_type or not difficulty or not muscle_group:
+                response = {"error": "Exercise type, difficulty, and muscle group are required."}
+                return Response(response, status=HTTP_400_BAD_REQUEST)
+            workout = get_exercises(exercise_type, difficulty, MUSCLE_GROUPS[muscle_group])
+            response = { "data": workout }
+            return Response(response, status=HTTP_200_OK)
+
+
+
 
