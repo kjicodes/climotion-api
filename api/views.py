@@ -90,7 +90,7 @@ def get_exercises(exercise_type, difficulty, muscle_groups: list=None):
 
     all_exercises = []
     if muscle_groups:
-        random_muscle_groups = random.sample(muscle_groups, min(4, len(muscle_groups)))
+        random_muscle_groups = random.sample(muscle_groups, min(5, len(muscle_groups)))
         print(f"Randomly chosen muscle groups: {random_muscle_groups}")
 
         shortfall = 0
@@ -118,16 +118,20 @@ def get_exercises(exercise_type, difficulty, muscle_groups: list=None):
             shortfall = target - k
 
     else:
-        exercises_api_params = {
-            "type": exercise_type,
-            "difficulty": difficulty
-        }
+        if exercise_type == "cardio":
+            exercises_api_params = {
+                "type": exercise_type,
+                "difficulty": difficulty
+            }
+        else:
+            exercises_api_params = { "type": exercise_type }
+
         exercises_api_response = requests.get(settings.EXERCISES_BASE_URL, params=exercises_api_params,
                                               headers=headers)
         exercises_api_response.raise_for_status()
         exercises_api_data = exercises_api_response.json()
 
-        exercises = random.sample(exercises_api_data, min(4, len(exercises_api_data)))
+        exercises = random.sample(exercises_api_data, min(5, len(exercises_api_data)))
 
         for item in exercises:
             all_exercises.append(item)
@@ -171,22 +175,22 @@ class WorkoutView(APIView):
         difficulty = request.query_params.get("difficulty")
         muscle_group = request.query_params.get("muscle-group")
 
-
         if exercise_type == "cardio":
             if not difficulty:
                 response = { "error": "Difficulty is required for cardio exercises." }
                 return Response(response, status=HTTP_400_BAD_REQUEST)
 
             workout = get_exercises(exercise_type, difficulty, muscle_groups=None)
-            response = { "data": workout }
-            return Response(response, status=HTTP_200_OK)
+        elif exercise_type == "stretching":
+            workout = get_exercises(exercise_type, difficulty=None, muscle_groups=None)
         else:
-            if not exercise_type or not difficulty or not muscle_group:
-                response = {"error": "Exercise type, difficulty, and muscle group are required."}
+            if not difficulty or not muscle_group:
+                response = {"error": "Difficulty and muscle group are required."}
                 return Response(response, status=HTTP_400_BAD_REQUEST)
             workout = get_exercises(exercise_type, difficulty, MUSCLE_GROUPS[muscle_group])
-            response = { "data": workout }
-            return Response(response, status=HTTP_200_OK)
+
+        response = { "data": workout }
+        return Response(response, status=HTTP_200_OK)
 
 
 class SearchedCityView(APIView):
