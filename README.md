@@ -43,7 +43,9 @@ A weather-aware workout planner. Enter your city to get current weather conditio
    python manage.py runserver
    ```
 
-5. Visit `http://127.0.0.1:8000/api/home/`
+5. Visit api endpoints
+   - `http://127.0.0.1:8000/weather/?city=London`
+   - `http://127.0.0.1:8000/workouts/?exercise-type=cardio&difficulty=beginner`
 
 ## Roadmap
 
