@@ -14,9 +14,9 @@ A weather-aware workout planner. Enter a city to get current weather conditions 
 
 - City-based weather lookup with current conditions, temperature, and daily high/low
 - Indoor or outdoor workout recommendation based on live weather and temperature
-- Workout type (cardio, strength training, or stretching) and difficulty level selection
-- Target muscle group selection for strength training
-- Personalized exercise recommendations based on user preferences
+- Personalized exercise recommendations based on workout type, difficulty, and target muscle groups                                                                  
+- Save, view, update, and delete workouts with before and after reflection notes
+- Previously searched cities saved for quick access
 
 ## Running Locally
 
@@ -54,8 +54,7 @@ A weather-aware workout planner. Enter a city to get current weather conditions 
 - [x] Exercise recommendations by workout type and difficulty level
 - [x] Muscle group selector for strength training
 - [x] Migrate backend to Django REST Framework
-- [ ] User authentication
-- [x] Searched Cities - save frequently searched cities for quick access
+- [x] Searched Cities - save frequently searched cities
 - [x] Saved Workouts - save and revisit previously generated workouts
+- [ ] User authentication
 - [ ] Build React frontend
-- [ ] UI improvements and bug fixes
