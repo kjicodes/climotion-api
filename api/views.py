@@ -1,8 +1,9 @@
 from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_200_OK, HTTP_201_CREATED
 from rest_framework.views import APIView
+from rest_framework.viewsets import ModelViewSet
 from rest_framework.response import Response
-from api.models import SearchedCity, SavedWorkout
 from api.serializers import SearchedCitySerializer, SavedWorkoutSerializer
+from api.models import SearchedCity, SavedWorkout
 from api.utils import get_weather, get_exercises, MUSCLE_GROUPS
 
 
@@ -21,16 +22,12 @@ class WeatherView(APIView):
             response = { "error": "City must only contain letters, spaces, hyphens, or apostrophes." }
             return Response(response, status=HTTP_400_BAD_REQUEST)
 
-        # save searched city to db if it does not exist
         if not SearchedCity.objects.filter(city_name=city).exists():
             SearchedCity.objects.create(city_name=city)
-
 
         forecast = get_weather(city)
         response = { "data": forecast }
         return Response(response, status=HTTP_200_OK)
-
-
 
 
 class WorkoutView(APIView):
@@ -59,59 +56,16 @@ class WorkoutView(APIView):
         return Response(response, status=HTTP_200_OK)
 
 
-class SearchedCityView(APIView):
-    """Returns a list of previously searched cities to populate city input suggestions."""
-
-    def get(self, request):
-        saved_cities = SearchedCity.objects.all()
-
-        if not saved_cities.exists():
-            response = { "error": "No saved cities found." }
-            return Response(response, status=HTTP_400_BAD_REQUEST)
-
-        serializer = SearchedCitySerializer(saved_cities, many=True)
-        response = { "data": serializer.data }
-        return Response(response, status=HTTP_200_OK)
+class SearchedCityViewSet(ModelViewSet):
+    queryset = SearchedCity.objects.all()
+    serializer_class = SearchedCitySerializer
 
 
-class SavedWorkoutView(APIView):
-    """Returns a list of previously saved workouts and saves new ones."""
-
-    def get(self, request):
-        saved_workouts = SavedWorkout.objects.all()
-
-        if not saved_workouts.exists():
-            response = { "error": "No saved workouts found." }
-            return Response(response, status=HTTP_400_BAD_REQUEST)
-
-        serializer = SavedWorkoutSerializer(saved_workouts, many=True)
-        response = { "data": serializer.data }
-        return Response(response, status=HTTP_200_OK)
-
-    def post(self, request):
-        serializer = SavedWorkoutSerializer(data=request.data)
-
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=HTTP_201_CREATED)
-
-        return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
+class SavedWorkoutViewSet(ModelViewSet):
+    queryset = SavedWorkout.objects.all()
+    serializer_class = SavedWorkoutSerializer
 
 
-class SavedWorkoutDetailView(APIView):
-    """Returns a single saved workout by id."""
-
-    def get(self, request, saved_workout_id):
-        try:
-            saved_workout = SavedWorkout.objects.get(id=saved_workout_id)
-        except SavedWorkout.DoesNotExist:
-            response = { "error": "Workout does not exist." }
-            return Response(response, status=HTTP_400_BAD_REQUEST)
-        else:
-            serializer = SavedWorkoutSerializer(saved_workout)
-
-            response = { "data": serializer.data }
-            return Response(response, status=HTTP_200_OK)
 
 
 
