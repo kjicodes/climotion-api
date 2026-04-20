@@ -8,7 +8,7 @@ A weather-aware workout planner. Enter a city to get current weather conditions 
 - **Frontend:** HTML, CSS
 - **Database:** SQLite (development)
 - **APIs:** OpenWeatherMap API, API Ninjas Exercises API
-- **Testing** Postman
+- **Testing:** Postman
 
 ## Features
 
