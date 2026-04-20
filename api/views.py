@@ -1,6 +1,6 @@
 from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_200_OK, HTTP_201_CREATED
 from rest_framework.views import APIView
-from rest_framework.viewsets import ModelViewSet
+from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 from rest_framework.response import Response
 from api.serializers import SearchedCitySerializer, SavedWorkoutSerializer
 from api.models import SearchedCity, SavedWorkout
@@ -56,7 +56,7 @@ class WorkoutView(APIView):
         return Response(response, status=HTTP_200_OK)
 
 
-class SearchedCityViewSet(ModelViewSet):
+class SearchedCityViewSet(ReadOnlyModelViewSet):
     queryset = SearchedCity.objects.all()
     serializer_class = SearchedCitySerializer
 
