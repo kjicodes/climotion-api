@@ -45,8 +45,11 @@ A weather-aware workout planner. Enter a city to get current weather conditions 
    ```
 
 5. Visit api endpoints
-   - `http://127.0.0.1:8000/weather/?city=London`
-   - `http://127.0.0.1:8000/workouts/?exercise-type=cardio&difficulty=beginner`
+   - `GET http://127.0.0.1:8000/weather/?city=London`
+   - `GET http://127.0.0.1:8000/workouts/?exercise-type=cardio&difficulty=beginner`
+   - `GET/POST http://127.0.0.1:8000/saved-workouts/`                                                                                                                         
+   - `GET/PATCH/DELETE http://127.0.0.1:8000/saved-workouts/<id>/`
+   - `GET http://127.0.0.1:8000/searched-cities/` 
 
 ## Roadmap
 
