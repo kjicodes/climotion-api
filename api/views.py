@@ -144,7 +144,7 @@ def get_exercises(exercise_type, difficulty, muscle_groups: list=None):
 class WeatherView(APIView):
     """Returns current weather condition and either an indoor or outdoor workout recommendation for a given city."""
 
-    def get(self, request, *args, **kwargs):
+    def get(self, request):
         city = request.query_params.get('city')
         if not city:
             response = { "error": "City is required." }
@@ -171,7 +171,7 @@ class WeatherView(APIView):
 class WorkoutView(APIView):
     """Returns a list of exercises based on the user's selected workout type, difficulty, and muscle groups."""
 
-    def get(self, request, *args, **kwargs):
+    def get(self, request):
         exercise_type = request.query_params.get("exercise-type")
         difficulty = request.query_params.get("difficulty")
         muscle_group = request.query_params.get("muscle-group")
@@ -197,33 +197,62 @@ class WorkoutView(APIView):
 class SearchedCityView(APIView):
     """Returns a list of previously searched cities to populate city input suggestions."""
 
-    def get(self, request, *args, **kwargs):
-        # fetch saved cities to show as drop-down suggestions list to the user
-        saved_cities = SearchedCitySerializer(SearchedCity.objects.all(), many=True)
+    def get(self, request):
+        saved_cities = SearchedCity.objects.all()
 
-        response = { "data": saved_cities.data }
+        if not saved_cities.exists():
+            response = { "error": "No saved cities found." }
+            return Response(response, status=HTTP_400_BAD_REQUEST)
+
+        serializer = SearchedCitySerializer(saved_cities, many=True)
+        response = { "data": serializer.data }
         return Response(response, status=HTTP_200_OK)
 
 
 class SavedWorkoutView(APIView):
     """Returns a list of previously saved workouts and saves new ones."""
 
-    def get(self, request, *args, **kwargs):
-        saved_workouts = SavedWorkoutSerializer(SavedWorkout.objects.all(), many=True)
-        if not saved_workouts.data:
-            response = { "message": "No saved workouts found." }
-            return Response(response, status=HTTP_200_OK)
+    def get(self, request):
+        saved_workouts = SavedWorkout.objects.all()
 
-        response = {"data": saved_workouts.data}
+        if not saved_workouts.exists():
+            response = { "error": "No saved workouts found." }
+            return Response(response, status=HTTP_400_BAD_REQUEST)
+
+        serializer = SavedWorkoutSerializer(saved_workouts, many=True)
+        response = { "data": serializer.data }
         return Response(response, status=HTTP_200_OK)
 
-    def post(self, request, *args, **kwargs):
+    def post(self, request):
         serializer = SavedWorkoutSerializer(data=request.data)
 
-        if not serializer.is_valid():
-            return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
-        serializer.save()
-        return Response(serializer.data, status=HTTP_201_CREATED)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=HTTP_201_CREATED)
+
+        return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
+
+
+class SavedWorkoutDetailView(APIView):
+    """Returns a single saved workout by id."""
+
+    def get(self, request, saved_workout_id):
+        try:
+            saved_workout = SavedWorkout.objects.get(id=saved_workout_id)
+        except SavedWorkout.DoesNotExist:
+            response = { "error": "Workout does not exist." }
+            return Response(response, status=HTTP_400_BAD_REQUEST)
+        else:
+            serializer = SavedWorkoutSerializer(saved_workout)
+
+            response = { "data": serializer.data }
+            return Response(response, status=HTTP_200_OK)
+
+
+
+
+
+
 
 
 
