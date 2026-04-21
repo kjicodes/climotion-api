@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.auth.models import User
 
 class SearchedCity(models.Model):
     city_name = models.CharField(max_length=100, blank=False)
@@ -12,6 +13,7 @@ class SearchedCity(models.Model):
 
 
 class SavedWorkout(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     exercise_type = models.CharField(max_length=100, blank=False)
     difficulty = models.CharField(max_length=100, blank=False)
     workout = models.JSONField(blank=False)
