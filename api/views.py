@@ -1,8 +1,12 @@
+from django.contrib.auth.models import User
+from rest_framework.authentication import TokenAuthentication
+from rest_framework.authtoken.models import Token
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_200_OK, HTTP_201_CREATED
 from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 from rest_framework.response import Response
-from api.serializers import SearchedCitySerializer, SavedWorkoutSerializer
+from api.serializers import SearchedCitySerializer, SavedWorkoutSerializer, UserSerializer
 from api.models import SearchedCity, SavedWorkout
 from api.utils import get_weather, get_exercises, MUSCLE_GROUPS
 
@@ -31,7 +35,9 @@ class WeatherView(APIView):
 
 
 class WorkoutView(APIView):
-    """Returns a list of exercises based on the user's selected workout type, difficulty, and muscle groups."""
+    """Authenticated users can retrieve a list of exercises based on the user's selected workout type, difficulty, and muscle groups."""
+    authentication_classes = (TokenAuthentication,)
+    permission_classes = (IsAuthenticated,)
 
     def get(self, request):
         exercise_type = request.query_params.get("exercise-type")
@@ -55,6 +61,28 @@ class WorkoutView(APIView):
         response = { "data": workout }
         return Response(response, status=HTTP_200_OK)
 
+class UserViewSet(ModelViewSet):
+    """Handles user registration and authentication."""
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid():
+            user = serializer.save()
+            token = Token.objects.get(user=user)
+            return Response({"user": serializer.data, "token": token.key}, status=HTTP_201_CREATED)
+        return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
+
+    def get_permissions(self):
+        if self.action == "create":
+            return []
+        return [IsAuthenticated]
+
+    def get_queryset(self):
+        user = User.objects.filter(id=self.request.user.id)
+        return user
+
 
 class SearchedCityViewSet(ReadOnlyModelViewSet):
     queryset = SearchedCity.objects.all()
@@ -62,8 +90,20 @@ class SearchedCityViewSet(ReadOnlyModelViewSet):
 
 
 class SavedWorkoutViewSet(ModelViewSet):
+    """CRUD operation for the authenticated user's saved workouts."""
     queryset = SavedWorkout.objects.all()
     serializer_class = SavedWorkoutSerializer
+    authentication_classes = (TokenAuthentication,)
+    permission_classes = (IsAuthenticated,)
+
+    def get_queryset(self):
+        user = self.request.user
+        saved_workouts = SavedWorkout.objects.filter(user=user)
+        return saved_workouts
+
+    def perform_create(self, serializer):
+        user = self.request.user
+        serializer.save(user=user)
 
 
 
