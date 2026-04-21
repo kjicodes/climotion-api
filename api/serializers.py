@@ -1,5 +1,24 @@
+from django.contrib.auth.models import User
 from rest_framework import serializers
+from rest_framework.authtoken.models import Token
 from api.models import SearchedCity, SavedWorkout
+
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ["id", "username", "password"]
+        extra_kwargs = {
+            "password": {
+                "write_only": True,
+                "required": True
+            }
+        }
+
+    def create(self, validated_data):
+        new_user = User.objects.create_user(**validated_data)
+        Token.objects.create(user=new_user)
+        return new_user
 
 
 class SearchedCitySerializer(serializers.ModelSerializer):
@@ -13,8 +32,11 @@ class SavedWorkoutSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = SavedWorkout
-        fields = ["id", "exercise_type", "difficulty", "workout", "workout_reflection_before", "workout_reflection_after", "workout_reflection", "created_at"]
+        fields = ["id", "user", "exercise_type", "difficulty", "workout", "workout_reflection_before", "workout_reflection_after", "workout_reflection", "created_at"]
         extra_kwargs = {
+            "user": {
+                "read_only": True
+            },
             "workout_reflection_before": {
                 "write_only": True
             },
