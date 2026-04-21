@@ -1,10 +1,10 @@
 # Climotion
 
-A weather-aware workout planner. Enter a city to get current weather conditions and a recommendation on whether to work out indoors or outdoors. Select your workout type, target muscle groups, and preferred difficulty level to receive personalized exercise recommendations tailored to both your preferences and the weather.
+A weather-aware workout planner for registered users. Enter a city to get current weather conditions and a recommendation on whether to work out indoors or outdoors. Create an account to get personalized exercise recommendations and save workouts with reflection notes.
 
 ## Tech Stack
 
-- **Backend:** Python, Django
+- **Backend:** Python, Django, Django REST Framework, JWT (Simple JWT)
 - **Frontend:** HTML, CSS
 - **Database:** SQLite (development)
 - **APIs:** OpenWeatherMap API, API Ninjas Exercises API
@@ -14,8 +14,9 @@ A weather-aware workout planner. Enter a city to get current weather conditions 
 
 - City-based weather lookup with current conditions, temperature, and daily high/low
 - Indoor or outdoor workout recommendation based on live weather and temperature
-- Personalized exercise recommendations based on workout type, difficulty, and target muscle groups                                                                  
-- Save, view, update, and delete workouts with before and after reflection notes
+- User registration and login with JWT authentication
+- Personalized exercise recommendations based on workout type, difficulty, and target muscle groups (authenticated users only)                                                                  
+- Save, view, update, and delete workouts with before and after reflection notes (authenticated users only)
 - Previously searched cities saved for quick access
 
 ## Running Locally
@@ -45,11 +46,18 @@ A weather-aware workout planner. Enter a city to get current weather conditions 
    ```
 
 5. Visit api endpoints
-   - `GET http://127.0.0.1:8000/weather/?city=London`
-   - `GET http://127.0.0.1:8000/workouts/?exercise-type=cardio&difficulty=beginner`
-   - `GET/POST http://127.0.0.1:8000/saved-workouts/`                                                                                                                         
-   - `GET/PATCH/DELETE http://127.0.0.1:8000/saved-workouts/<id>/`
-   - `GET http://127.0.0.1:8000/searched-cities/` 
+
+   **Public**
+   - `GET /weather/?city=London`
+   - `GET /searched-cities/`
+   - `POST /users/` - register
+   - `POST /api/token/` - login
+   - `POST /api/token/refresh/` - refresh access token
+   
+   **Authenticated**
+   - `GET /workouts/?exercise-type=cardio&difficulty=beginner`
+   - `GET/POST /saved-workouts/`
+   - `GET/PATCH/DELETE /saved-workouts/<id>/`
 
 ## Roadmap
 
@@ -59,5 +67,5 @@ A weather-aware workout planner. Enter a city to get current weather conditions 
 - [x] Migrate backend to Django REST Framework
 - [x] Searched Cities - save frequently searched cities
 - [x] Saved Workouts - save and revisit previously generated workouts
-- [ ] User authentication
+- [x] User authentication
 - [ ] Build React frontend
