@@ -1,23 +1,29 @@
+import re
 from django.contrib.auth.models import User
 from rest_framework import serializers
-from rest_framework.authtoken.models import Token
 from api.models import SearchedCity, SavedWorkout
 
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ["id", "username", "password"]
+        fields = ["id", "first_name", "last_name", "username", "password"]
         extra_kwargs = {
+            "first_name": { "required": True },
+            "last_name": { "required": True },
             "password": {
                 "write_only": True,
                 "required": True
             }
         }
 
+    def validate_password(self, value):
+        if not re.match(r'^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$', value):
+            raise serializers.ValidationError("Password must be at least 8 characters and contain an uppercase letter, lowercase letter, number, and special character (@$!%*?&).")
+        return value
+
     def create(self, validated_data):
         new_user = User.objects.create_user(**validated_data)
-        Token.objects.create(user=new_user)
         return new_user
 
 
