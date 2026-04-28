@@ -33,7 +33,7 @@ BAD_WEATHER_CONDITIONS = {
 def get_workout_suggestion(weather):
     """Evaluate weather conditions and temperature to return an indoor or outdoor workout recommendation."""
 
-    description = weather["weather"][0]["main"]
+    description = weather["weather"][0]["main"].lower()
     temp = weather["main"]["feels_like"]
     for condition, message in BAD_WEATHER_CONDITIONS.items():
         if condition in description:
@@ -71,6 +71,7 @@ def get_weather(city):
 
     celsius_conversion = 273.15
     forecast = {
+        'city': city.capitalize(),
         'weather': weather_data["weather"][0]['main'],
         'description': get_workout_suggestion(weather_data),
         'temperature': int(weather_data["main"]["temp"] - celsius_conversion),
