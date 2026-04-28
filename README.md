@@ -5,7 +5,7 @@ A weather-aware workout planner for registered users. Enter a city to get curren
 ## Tech Stack
 
 - **Backend:** Python, Django, Django REST Framework, JWT (Simple JWT)
-- **Frontend:** HTML, CSS
+- **Frontend:** React, Tailwind CSS — see [climotion-frontend](https://github.com/kjicodes/climotion-frontend)
 - **Database:** SQLite (development)
 - **APIs:** OpenWeatherMap API, API Ninjas Exercises API
 - **Testing:** Postman
@@ -68,4 +68,4 @@ A weather-aware workout planner for registered users. Enter a city to get curren
 - [x] Searched Cities - save frequently searched cities
 - [x] Saved Workouts - save and revisit previously generated workouts
 - [x] User authentication
-- [ ] Build React frontend
+- [ ] React frontend — in progress, see [climotion-frontend](https://github.com/kjicodes/climotion-frontend)
