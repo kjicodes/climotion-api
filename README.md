@@ -1,5 +1,7 @@
 # Climotion
 
+<img src="media/climotion-screenshot.png" alt="Climotion" width="600"/>
+
 A weather-aware workout planner for registered users. Enter a city to get current weather conditions and a recommendation on whether to work out indoors or outdoors. Create an account to get personalized exercise recommendations and save workouts with reflection notes.
 
 ---
