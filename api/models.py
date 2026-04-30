@@ -2,7 +2,8 @@ from django.db import models
 from django.contrib.auth.models import User
 
 class SearchedCity(models.Model):
-    city_name = models.CharField(max_length=100, blank=False)
+    city_name = models.CharField(unique=True, max_length=100, blank=False)
+    search_count = models.IntegerField(default=0)
 
     class Meta:
         verbose_name = "Searched City"
