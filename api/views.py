@@ -1,6 +1,6 @@
 from django.contrib.auth.models import User
 from rest_framework.permissions import IsAuthenticated, AllowAny
-from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_200_OK, HTTP_201_CREATED
+from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_200_OK, HTTP_201_CREATED, HTTP_404_NOT_FOUND
 from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 from rest_framework.response import Response
@@ -48,16 +48,16 @@ class WeatherView(APIView):
             response = { "error": "City is required." }
             return Response(response, status=HTTP_400_BAD_REQUEST)
 
-        city_is_valid = city.replace(" ", "").replace("-", "").replace("'", "").isalpha()
-        city_is_numeric = city.isdigit()
-        if city_is_numeric or not city_is_valid:
-            response = { "error": "City must only contain letters, spaces, hyphens, or apostrophes." }
-            return Response(response, status=HTTP_400_BAD_REQUEST)
-
-        if not SearchedCity.objects.filter(city_name=city).exists():
-            SearchedCity.objects.create(city_name=city)
-
-        forecast = get_weather(city)
+        try:
+            forecast = get_weather(city)
+        except ValueError as e:
+            response = { "error": str(e)}
+            return Response(response, status=HTTP_404_NOT_FOUND)
+        
+        city_entry, _ = SearchedCity.objects.get_or_create(city_name=city)
+        city_entry.search_count += 1
+        city_entry.save()
+        
         response = { "data": forecast }
         return Response(response, status=HTTP_200_OK)
 
@@ -93,6 +93,9 @@ class SearchedCityViewSet(ReadOnlyModelViewSet):
     queryset = SearchedCity.objects.all()
     serializer_class = SearchedCitySerializer
     permission_classes = [AllowAny]
+    
+    def get_queryset(self):
+        return SearchedCity.objects.order_by('-search_count')
 
 
 class SavedWorkoutViewSet(ModelViewSet):
