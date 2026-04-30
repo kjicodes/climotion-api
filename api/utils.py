@@ -57,6 +57,10 @@ def get_weather(city):
     geo_api_response = requests.get(settings.GEOCODING_BASE_URL, params=geo_api_params)
     geo_api_response.raise_for_status()
     geo_api_data = geo_api_response.json()
+    
+    if not geo_api_data:
+        raise ValueError(f'City {city} not found.')
+    
     latitude = geo_api_data[0]['lat']
     longitude = geo_api_data[0]['lon']
 
