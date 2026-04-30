@@ -1,10 +1,10 @@
+from requests.exceptions import HTTPError
 from django.contrib.auth.models import User
 from rest_framework.permissions import IsAuthenticated, AllowAny
-from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_200_OK, HTTP_201_CREATED, HTTP_404_NOT_FOUND
+from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_200_OK, HTTP_201_CREATED, HTTP_404_NOT_FOUND, HTTP_503_SERVICE_UNAVAILABLE
 from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 from rest_framework.response import Response
-from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework_simplejwt.tokens import RefreshToken
 from api.serializers import SearchedCitySerializer, SavedWorkoutSerializer, UserSerializer
 from api.models import SearchedCity, SavedWorkout
@@ -50,16 +50,18 @@ class WeatherView(APIView):
 
         try:
             forecast = get_weather(city)
-        except ValueError as e:
-            response = { "error": str(e)}
+        except ValueError:
+            response = { "error": "City not found. Please try again."}
             return Response(response, status=HTTP_404_NOT_FOUND)
+        except HTTPError:
+            response = { "error": "Weather data unavailable. Please try again later."}
+            return Response(response, status=HTTP_503_SERVICE_UNAVAILABLE)
         
         city_entry, _ = SearchedCity.objects.get_or_create(city_name=city)
         city_entry.search_count += 1
         city_entry.save()
         
-        response = { "data": forecast }
-        return Response(response, status=HTTP_200_OK)
+        return Response(forecast, status=HTTP_200_OK)
 
 
 class WorkoutView(APIView):
@@ -70,23 +72,30 @@ class WorkoutView(APIView):
         exercise_type = request.query_params.get("exercise-type")
         difficulty = request.query_params.get("difficulty")
         muscle_group = request.query_params.get("muscle-group")
+        
+        if not exercise_type:
+            response = { "error": "Exercise type is required."}
+            return Response(response, status=HTTP_400_BAD_REQUEST)
 
-        if exercise_type == "cardio":
-            if not difficulty:
-                response = { "error": "Difficulty is required for cardio exercises." }
-                return Response(response, status=HTTP_400_BAD_REQUEST)
+        try:
+            if exercise_type == "cardio":
+                if not difficulty:
+                    response = { "error": "Difficulty is required for cardio exercises." }
+                    return Response(response, status=HTTP_400_BAD_REQUEST)
 
-            workout = get_exercises(exercise_type, difficulty, muscle_groups=None)
-        elif exercise_type == "stretching":
-            workout = get_exercises(exercise_type, difficulty=None, muscle_groups=None)
-        else:
-            if not difficulty or not muscle_group:
-                response = {"error": "Difficulty and muscle group are required."}
-                return Response(response, status=HTTP_400_BAD_REQUEST)
-            workout = get_exercises(exercise_type, difficulty, MUSCLE_GROUPS[muscle_group])
+                workout = get_exercises(exercise_type, difficulty, muscle_groups=None)
+            elif exercise_type == "stretching":
+                workout = get_exercises(exercise_type, difficulty=None, muscle_groups=None)
+            else:
+                if not difficulty or not muscle_group:
+                    response = {"error": "Difficulty and muscle group are required."}
+                    return Response(response, status=HTTP_400_BAD_REQUEST)
+                workout = get_exercises(exercise_type, difficulty, MUSCLE_GROUPS[muscle_group])
+        except HTTPError:
+            response = { "error": "Exercises unavailable. Please try again later."}
+            return Response(response, status=HTTP_503_SERVICE_UNAVAILABLE)
 
-        response = { "data": workout }
-        return Response(response, status=HTTP_200_OK)
+        return Response(workout, status=HTTP_200_OK)
 
 
 class SearchedCityViewSet(ReadOnlyModelViewSet):
